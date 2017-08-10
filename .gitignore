@@ -1,0 +1,4 @@
+segments
+node_modules
+*.secret.env
+/tendermint
