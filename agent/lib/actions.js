@@ -1,49 +1,70 @@
 module.exports = {
-  events: {
-    didSave: function(segment) {
-      console.log('Segment ' + segment.meta.linkHash + ' was saved!');
-    }
-  },
 
+  /**
+   * Creates a new TODO list.
+   * @param {string} title - a name for the list
+   */
   init: function(title) {
+    // Validate parameters.
     if (!title) {
-      return this.reject('a title is required');
+      return this.reject('title required');
     }
 
-    this.state.title = title;
-    this.state.messages = [];
-    this.state.updatedAt = Date.now();
-    this.meta.priority = 0;
+    // Save the list info.
+    this.state = {
+      title: title
+    };
 
+    // Set the `list` tag.
+    this.meta.tags = ['list'];
+
+    // Create the first segment.
     this.append();
   },
 
-  addMessage: function(message, author) {
-    if (!message) {
-      return this.reject('a message is required');
+  /**
+   * Adds an item to the TODO list.
+   * @param {string} description - a description of the item
+   */
+  addItem: function(description) {
+    // Validate parameters.
+    if (!description) {
+      return this.reject('description required');
     }
 
-    if (!author) {
-      return this.reject('an author is required');
+    // Make sure we are appending a list segment. It should have the `list` tag.
+    if (this.meta.tags.indexOf('list') < 0) {
+      return this.reject('not a list');
     }
 
-    this.state.messages.push({ message: message, author: author });
-    this.state.updatedAt = Date.now();
-    this.meta.priority++;
+    // Save the item info.
+    this.state = {
+      description: description
+    };
 
+    // Set the `item` tag.
+    this.meta.tags = ['item'];
+
+    // Append the new segment.
     this.append();
   },
 
-  addTag: function(tag) {
-    if (!tag) {
-      return this.reject('a tag is required');
+  /**
+   * Completes an item in the TODO list.
+   */
+  completeItem: function() {
+    // Make sure we are appending an item segment. It should have the `item` tag.
+    if (this.meta.tags.indexOf('item') < 0) {
+      return this.reject('not an item');
     }
 
-    this.meta.tags = this.meta.tags || [];
-    this.meta.tags.push(tag);
-    this.state.updatedAt = Date.now();
-    this.meta.priority++;
+    // We don't need anything in the state.
+    this.state = {};
 
+    // Set the `completion` tag.
+    this.meta.tags = ['completion'];
+
+    // Append the new segment.
     this.append();
   }
 };
